@@ -14,7 +14,6 @@ import { ZodType } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,6 +24,8 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { FIELD_NAMES, FIELD_TYPES } from "@/constant";
 import ImageUpload from "./ImageUpload";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Props<T extends FieldValues> {
   schema: ZodType<T>;
@@ -39,6 +40,7 @@ const AuthForm = <T extends FieldValues>({
   defaultValues,
   onSubmit,
 }: Props<T>) => {
+  const router = useRouter();
   const isSignIn = type === "SIGN_IN";
 
   const form: UseFormReturn<T> = useForm({
@@ -46,7 +48,25 @@ const AuthForm = <T extends FieldValues>({
     defaultValues: defaultValues as DefaultValues<T>,
   });
 
-  const handleSubmit: SubmitHandler<T> = async (data) => {};
+  const handleSubmit: SubmitHandler<T> = async (data) => {
+    const result = await onSubmit(data);
+
+    if (result.success) {
+      toast.success("Success", {
+        description: isSignIn
+          ? "You have successfully signed in"
+          : "you have successfully signed up",
+        richColors: true,
+      });
+
+      router.push("/");
+    } else {
+      toast.error(`Error ${isSignIn ? "Signin In" : "Signin Up"}`, {
+        description: result.error ?? "An Error Occured",
+        richColors: true,
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
