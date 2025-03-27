@@ -1,10 +1,17 @@
 import { signOut } from "@/auth";
 import BookList from "@/components/BookList";
 import { Button } from "@/components/ui/button";
-import { sampleBooks } from "@/constant";
+import { db } from "@/database/drizzle";
+import { books } from "@/database/schema";
+import { desc } from "drizzle-orm";
 import React from "react";
 
-const MyProfile = () => {
+const MyProfile = async () => {
+  const latestBook = (await db
+    .select()
+    .from(books)
+    .limit(20)
+    .orderBy(desc(books.createdAt))) as Book[];
   return (
     <>
       <form
@@ -18,7 +25,11 @@ const MyProfile = () => {
         <Button>Logout</Button>
       </form>
 
-      <BookList title="Borrowed Books" books={sampleBooks} />
+      <BookList
+        title="Latest Books"
+        books={latestBook}
+        containerClassName="mt-28"
+      />
     </>
   );
 };
